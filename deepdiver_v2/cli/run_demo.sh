@@ -81,8 +81,8 @@ setup_demo() {
         print_warning "No .env file found in config/ directory"
         print_status "Creating sample .env file from template..."
         
-        if [ -f "env.template" ]; then
-            cp env.template config/.env
+        if [ -f "config/env.template" ]; then
+            cp config/env.template config/.env
             print_status "Sample .env file created at config/.env"
             print_warning "Please edit config/.env with your actual configuration values"
         else

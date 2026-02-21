@@ -23,13 +23,15 @@ sys.path.insert(0, str(Path(__file__).parent))
 # 导入日志配置
 from deepdiver_v2.config.logging_config import quick_setup, get_logger
 
-# 加载环境变量
-load_dotenv()
-# 数据库配置
-MYSQL_HOST=""
-MYSQL_USER=""
-MYSQL_PASSWORD=""
-MYSQL_DATABASE=""
+# 从 deepdiver_v2/config/.env 加载环境变量
+env_path = Path(__file__).parent / 'deepdiver_v2' / 'config' / '.env'
+load_dotenv(dotenv_path=env_path)
+
+# 从环境变量读取数据库配置
+MYSQL_HOST = os.getenv('MYSQL_HOST', 'localhost')
+MYSQL_USER = os.getenv('MYSQL_USER', 'root')
+MYSQL_PASSWORD = os.getenv('MYSQL_PASSWORD', '')
+MYSQL_DATABASE = os.getenv('MYSQL_DATABASE', 'chatai')
 # 初始化日志系统
 quick_setup(
     environment=os.getenv('APP_ENV', 'production'),

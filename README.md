@@ -110,11 +110,11 @@ git clone <repository-url>
 cd SciAssistant
 
 # 2. 安装依赖
-pip install -r requirements.txt
+pip install -r deepdiver_v2/requirements.txt
 
 # 3. 配置环境变量
-cp config/env.template config/.env
-# 编辑 config/.env 文件，配置数据库和 API 密钥
+cp deepdiver_v2/config/env.template deepdiver_v2/config/.env
+# 编辑 deepdiver_v2/config/.env 文件，配置数据库和 API 密钥
 
 # 4. 初始化数据库
 mysql -u root -p < database/schema.sql

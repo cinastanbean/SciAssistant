@@ -479,7 +479,7 @@ def load_environment_config(quiet: bool = False):
         if not env_file.exists():
             if not quiet:
                 console.print(f"[yellow]⚠️ No .env file found at {env_file}[/yellow]")
-                console.print(f"[yellow]💡 Please copy env.template to config/.env and configure your settings[/yellow]")
+                console.print(f"[yellow]💡 Please copy config/env.template to config/.env and configure your settings[/yellow]")
             return None
         
         # Reload configuration to pick up .env file
@@ -505,14 +505,14 @@ def create_sample_env_file():
         return
     
     # Copy from template
-    template_file = Path(__file__).parent.parent / "env.template"
+    template_file = Path(__file__).parent.parent / "config" / "env.template"
     if template_file.exists():
         import shutil
         shutil.copy2(template_file, env_file)
         console.print(f"[green]✅ Created .env file from template at {env_file}[/green]")
         console.print("[yellow]⚠️ Please edit the .env file with your actual configuration values[/yellow]")
     else:
-        console.print(f"[red]❌ Could not find env.template to copy[/red]")
+        console.print(f"[red]❌ Could not find config/env.template to copy[/red]")
 
 
 def run_demo_query(planner, query: str, visualizer: DemoVisualizer, config) -> Optional[AgentResponse]:

@@ -24,11 +24,11 @@ pip install -r requirements.txt
 Create a `.env` file in the `config/` directory:
 
 ```bash
-# From the project root
-cp env.template config/.env
+# From project root
+cp deepdiver_v2/config/env.template deepdiver_v2/config/.env
 ```
 
-Then edit `config/.env` with your settings:
+Then edit `deepdiver_v2/config/.env` with your settings:
 
 ```bash
 # Custom LLM Service Configuration
