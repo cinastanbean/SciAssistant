@@ -1111,14 +1111,19 @@
             // 初始化功能标签按钮
             initFeatureTabs();
 
+            // 跳过登录检查 - 设置默认用户信息
+            window.userToken = 'bypass-auth-token';
+            window.userId = '1';
+            window.username = 'Admin';
+
             // 1. 读取登录状态
             const rememberMe = localStorage.getItem('rememberMe') === 'true';
             const storage = rememberMe ? localStorage : sessionStorage;
 
             // 2. 获取登录信息
-            const userToken = storage.getItem('userToken');
-            const username = storage.getItem('username');
-            const userId = storage.getItem('userId');
+            const userToken = storage.getItem('userToken') || window.userToken;
+            const username = storage.getItem('username') || window.username;
+            const userId = storage.getItem('userId') || window.userId;
 
             // 3. 定位DOM元素
             const userLogin = document.getElementById('user-login');
@@ -1319,7 +1324,7 @@ function copyToClipboard(text, button) {
             historyHeader.className = 'chat-history-header px-3 py-2 text-sm font-semibold text-gray-700 flex items-center border-b border-gray-200';
             historyHeader.innerHTML = '<i class="fa fa-history mr-2 text-gray-500"></i><span>历史会话</span>';
             chatHistory.appendChild(historyHeader);
-            fetch(`/5000/api/chat/sessions/${userId}`)
+            fetch(`/api/chat/sessions/${userId}`)
              .then(response => {
                 // 检查响应状态
                 if (!response.ok) {
@@ -1782,7 +1787,7 @@ function copyToClipboard(text, button) {
                 try {
                     const formData = new FormData();
                     formData.append('file', file);
-                    const resp = await fetch('/5000/api/context/upload', {
+                    const resp = await fetch('/api/context/upload', {
                         method: 'POST',
                         body: formData
                     });
@@ -1798,7 +1803,7 @@ function copyToClipboard(text, button) {
                         serverFilename: data.filename || '',
                         content: data.text_content || '',
                         fileId: data.file_id,
-                        url: data.download_url ? ('/5000' + data.download_url) : '',
+                        url: data.download_url ? ('/5001' + data.download_url) : '',
                         size: file.size,
                         type: file.type,
                         fileType: data.file_type || ''  // 后端返回的文件类型（如 .pdf）
@@ -1849,14 +1854,14 @@ function copyToClipboard(text, button) {
             const message = userInput.value.trim();
             if (!message) return;
 
-            // 检查登录状态
-            if (!window.userToken) {
-                showToast('请先登录后再使用聊天功能', 'warning');
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 1500);
-                return;
-            }
+            // 跳过登录检查 - 直接使用系统
+            // if (!window.userToken) {
+            //     showToast('请先登录后再使用聊天功能', 'warning');
+            //     setTimeout(() => {
+            //         window.location.href = 'login.html';
+            //     }, 1500);
+            //     return;
+            // }
             
             // 清除所有文件通知消息（绿色添加消息和橙色删除通知）
             clearFileNotifications();
@@ -1931,7 +1936,7 @@ function copyToClipboard(text, button) {
                       }
                   }
 
-                fetch('/5000/api/chat/sessions', {
+                fetch('/api/chat/sessions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -2029,7 +2034,7 @@ function copyToClipboard(text, button) {
                   }
                 if (titleSpan && (currentTitle === '新会话' || currentTitle === '' || currentTitle == null) && suggestedTitle !== currentTitle) {
                     titleSpan.textContent = suggestedTitle;
-                    fetch(`/5000/api/chat/sessions/${sessionId}`, {
+                    fetch(`/api/chat/sessions/${sessionId}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
@@ -2136,7 +2141,7 @@ function copyToClipboard(text, button) {
                         // 确保有文件ID才进行RAG检索
                         const useFullPrompt = document.getElementById('rag-full-toggle')?.checked === true;
                         console.log('[Chat模式] 开始RAG检索:', { query: message, fileIds, mode: useFullPrompt ? 'full' : 'snippets' });
-                        prepareMessagesPromise = fetch('/5000/api/rag/search', {
+                        prepareMessagesPromise = fetch('/api/rag/search', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -2974,7 +2979,7 @@ ${contextText.trim()}
         
         // 👉 新增：把 result 存到后端数据库
         function saveResultToDB(content, sessionId, from_who, backendSessionId = '', has_report = 0, think_msg = '', report_title = '') {
-            fetch('/5000/api/chat/messages', {
+            fetch('/api/chat/messages', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -3169,7 +3174,7 @@ ${contextText.trim()}
                     transition: background-color 0.2s;
                 `;
                 pdfOption.innerHTML = '<i class="fa fa-file-pdf-o" style="margin-right: 8px; color: #ef4444;"></i>PDF 格式';
-                pdfOption.href = `/5000/api/download_pdf?session_id=${sessionId}`;
+                pdfOption.href = `/api/download_pdf?session_id=${sessionId}`;
                 pdfOption.download = `final_report_${sessionId}.pdf`;
                 
                 pdfOption.addEventListener('mouseenter', () => {
@@ -3204,7 +3209,7 @@ ${contextText.trim()}
                     border-top: 1px solid #e5e7eb;
                 `;
                 mdOption.innerHTML = '<i class="fa fa-file-text-o" style="margin-right: 8px; color: #3b82f6;"></i>Markdown';
-                mdOption.href = `/5000/api/download_md?session_id=${sessionId}`;
+                mdOption.href = `/api/download_md?session_id=${sessionId}`;
                 mdOption.download = `final_report_${sessionId}.md`;
                 
                 mdOption.addEventListener('mouseenter', () => {
@@ -3418,7 +3423,7 @@ ${contextText.trim()}
                         titleEl.className = 'font-medium text-gray-700 mb-1';
                         if (fileGroup.file_id) {
                             const a = document.createElement('a');
-                            a.href = `/5000/api/context/files/${encodeURIComponent(fileGroup.file_id)}`;
+                            a.href = `/api/context/files/${encodeURIComponent(fileGroup.file_id)}`;
                             a.target = '_blank';
                             a.className = 'hover:underline';
                             const snippetCount = fileGroup.snippets.length;
@@ -3435,7 +3440,7 @@ ${contextText.trim()}
                         
                         if (fileGroup.file_id) {
                             const downLink = document.createElement('a');
-                            downLink.href = `/5000/api/context/files/${encodeURIComponent(fileGroup.file_id)}`;
+                            downLink.href = `/api/context/files/${encodeURIComponent(fileGroup.file_id)}`;
                             downLink.target = '_blank';
                             downLink.className = 'text-primary hover:underline text-xs';
                             downLink.textContent = '下载文件';
@@ -3539,7 +3544,7 @@ ${contextText.trim()}
             const storage = rememberMe ? localStorage : sessionStorage;
             const userId = storage.getItem('userId'); // 使用已有的userId获取逻辑
             // 调用后端API创建新会话
-            fetch('/5000/api/chat/sessions', {
+            fetch('/api/chat/sessions', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -3678,7 +3683,7 @@ ${contextText.trim()}
                 }
 
                 if (sessionId) {
-                    fetch(`/5000/api/chat/messages/${sessionId}`)
+                    fetch(`/api/chat/messages/${sessionId}`)
                         .then(response => {
                             if (!response.ok) {
                                 throw new Error(`HTTP 错误，状态码：${response.status}`);
@@ -3817,7 +3822,7 @@ ${contextText.trim()}
                     const sessionId = session.getAttribute('data-id');
                     if (sessionId) {
                         // 示例API调用
-                        fetch(`/5000/api/chat/sessions/${sessionId}`, {
+                        fetch(`/api/chat/sessions/${sessionId}`, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -3844,7 +3849,7 @@ ${contextText.trim()}
                 
                 // 如果是有ID的会话，调用API删除
                 if (sessionId) {
-                    fetch(`http://10.1.11.177:5000/api/chat/sessions/${sessionId}`, {
+                    fetch(`/api/chat/sessions/${sessionId}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${window.userToken}`
@@ -4279,7 +4284,7 @@ ${contextText.trim()}
 
             try {
                 // 调用后端API上传文件
-                const response = await fetch('/5000/api/files/upload', {
+                const response = await fetch('/api/files/upload', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${window.userToken}`
@@ -4368,7 +4373,7 @@ ${contextText.trim()}
 
             try {
                 // 调用后端API获取文件列表
-                const response = await fetch(`/5000/api/files/list/${userId}`, {
+                const response = await fetch(`/api/files/list/${userId}`, {
                     headers: {
                         'Authorization': `Bearer ${window.userToken}`
                     }
@@ -4594,7 +4599,7 @@ ${contextText.trim()}
 
             try {
                 // 调用批量删除API
-                const response = await fetch('/5000/api/files/batch-delete', {
+                const response = await fetch('/api/files/batch-delete', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -4688,7 +4693,7 @@ ${contextText.trim()}
             
             // 可选：调用后端API创建文件问答会话
             try {
-                fetch('/5000/api/files/start_qa', {
+                fetch('/api/files/start_qa', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -4710,7 +4715,7 @@ ${contextText.trim()}
         async function downloadFile(fileId) {
             try {
                 // 调用后端API下载文件
-                const downloadUrl = `/5000/api/files/download/${fileId}?token=${window.userToken}`;
+                const downloadUrl = `/api/files/download/${fileId}?token=${window.userToken}`;
                 window.location.href = downloadUrl;
                 console.log('正在下载文件:', fileId);
             } catch (error) {
@@ -4744,7 +4749,7 @@ ${contextText.trim()}
                 } else if (currentDeletingFileId) {
                     // 执行单个文件删除
                 // 调用后端API删除文件
-                const response = await fetch(`/5000/api/files/delete/${currentDeletingFileId}`, {
+                const response = await fetch(`/api/files/delete/${currentDeletingFileId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -5051,7 +5056,7 @@ ${contextText.trim()}
             try {
                 libraryFilesList.innerHTML = '<div class="text-center py-8 text-gray-500"><i class="fa fa-spinner fa-spin text-3xl mb-2"></i><p>加载中...</p></div>';
                 
-                const response = await fetch(`/5000/api/files/list/${userId}`, {
+                const response = await fetch(`/api/files/list/${userId}`, {
                     headers: {
                         'Authorization': `Bearer ${window.userToken}`
                     }
@@ -5347,7 +5352,7 @@ ${contextText.trim()}
                         formData.append('save_to_library', 'true');
                     }
                     
-                    const resp = await fetch('/5000/api/context/upload', {
+                    const resp = await fetch('/api/context/upload', {
                         method: 'POST',
                         body: formData
                     });
@@ -5379,7 +5384,7 @@ ${contextText.trim()}
                         serverFilename: data.filename || '',
                         content: data.text_content || '',
                         fileId: data.file_id,
-                        url: data.download_url ? ('/5000' + data.download_url) : '',
+                        url: data.download_url ? ('/5001' + data.download_url) : '',
                         size: file.size,
                         type: file.type,
                         fileType: data.file_type || '',
@@ -5453,7 +5458,7 @@ ${contextText.trim()}
                     serverFilename: file.name,
                     content: '', // 文档库文件内容由后端处理
                     fileId: fileId,
-                    url: `/5000/api/files/download/${fileId}`,
+                    url: `/api/files/download/${fileId}`,
                     size: file.size,
                     type: mimeType,
                     fileType: fileType,

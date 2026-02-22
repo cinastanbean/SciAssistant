@@ -88,7 +88,7 @@ def safe_filename_unicode(filename: str) -> str:
     
     return safe_name
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='chatAi', template_folder='chatAi')
 CORS(app)  # 解决跨域问题
 
 # 配置JWT密钥，实际生产环境中应使用更安全的方式存储
@@ -1654,6 +1654,37 @@ def start_file_qa():
         logger.error(f"启动文件问答失败: {str(e)}")
         return jsonify({'success': False, 'message': f'启动文件问答失败: {str(e)}'}), 500
 
+# HTML 页面路由
+@app.route('/')
+def index():
+    """首页 - 重定向到登录页"""
+    return send_from_directory('chatAi', 'login.html')
+
+@app.route('/<path:filename>')
+def serve_static(filename):
+    """提供静态文件"""
+    return send_from_directory('chatAi', filename)
+
+@app.route('/ai_chat.html', endpoint='ai_chat_page')
+def ai_chat_page():
+    """AI 聊天页面"""
+    return send_from_directory('chatAi', 'ai_chat.html')
+
+@app.route('/login.html', endpoint='login_page')
+def login_page():
+    """登录页面"""
+    return send_from_directory('chatAi', 'login.html')
+
+@app.route('/register.html', endpoint='register_page')
+def register_page():
+    """注册页面"""
+    return send_from_directory('chatAi', 'register.html')
+
+@app.route('/forgot-password.html', endpoint='forgot_password_page')
+def forgot_password_page():
+    """忘记密码页面"""
+    return send_from_directory('chatAi', 'forgot-password.html')
+
 #健康检查接口
 @app.route('/api/health', methods=['GET'])
 def health_check():
@@ -1663,4 +1694,4 @@ def health_check():
 
 if __name__ == '__main__':
     # 生产环境请修改debug=False，并配置合适的host和port
-    app.run(debug=False, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=5001)
