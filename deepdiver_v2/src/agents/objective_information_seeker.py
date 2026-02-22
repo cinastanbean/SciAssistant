@@ -188,7 +188,7 @@ For each function call, return a JSON object placed within the [unused11][unused
             
             pangu_url = model_config.get('url') or os.getenv('MODEL_REQUEST_URL', '')
             model_token = model_config.get('token') or os.getenv('MODEL_REQUEST_TOKEN', '')
-            headers = {'Content-Type': 'application/json', 'csb-token': model_token}
+            headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {model_token}'}
 
             # ReAct Loop: Reasoning -> Acting -> Reasoning -> Acting...
             while iteration < self.config.max_iterations and not task_completed:
@@ -206,10 +206,8 @@ For each function call, return a JSON object placed within the [unused11][unused
                                 headers=headers,
                                 json={
                                     "model": self.config.model,
-                                    "chat_template": "{% for message in messages %}{% if loop.first and messages[0]['role'] != 'system' %}{{ '<s>[unused9]系统：[unused10]' }}{% endif %}{% if message['role'] == 'system' %}{{'<s>[unused9]系统：' + message['content'] + '[unused10]'}}{% endif %}{% if message['role'] == 'assistant' %}{{'[unused9]助手：' + message['content'] + '[unused10]'}}{% endif %}{% if message['role'] == 'tool' %}{{'[unused9]工具：' + message['content'] + '[unused10]'}}{% endif %}{% if message['role'] == 'function' %}{{'[unused9]方法：' + message['content'] + '[unused10]'}}{% endif %}{% if message['role'] == 'user' %}{{'[unused9]用户：' + message['content'] + '[unused10]'}}{% endif %}{% endfor %}{% if add_generation_prompt %}{{ '[unused9]助手：' }}{% endif %}",
                                     "messages": conversation_history,
                                     "temperature": self.config.temperature,
-                                    "spaces_between_special_tokens": False,
                                     "max_tokens": self.config.max_tokens,
                                 },
                                 timeout=model_config.get("timeout", 180)
